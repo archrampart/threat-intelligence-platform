@@ -1,0 +1,108 @@
+# Docker Compose configuration
+# Note: version is no longer required in Docker Compose v2+
+# .env file is optional - if not found, default values will be used
+
+services:
+  # Redis Cache
+  redis:
+    image: redis:8-alpine
+    container_name: threat-intel-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - threat-intel-network
+
+  # PostgreSQL Database (optional - can use SQLite for development)
+  postgres:
+    image: postgres:16-alpine
+    container_name: threat-intel-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-threat_intel}
+      POSTGRES_USER: ${POSTGRES_USER:-threat_intel}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-threat_intel_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-threat_intel}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - threat-intel-network
+    profiles:
+      - postgres  # Only start with --profile postgres
+
+  # Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    container_name: threat-intel-backend
+    restart: unless-stopped
+    # Environment variables (can be overridden with .env file)
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-sqlite:///./data/threat_intel.db}
+      - REDIS_URL=redis://redis:6379/0
+      - REDIS_ENABLED=${REDIS_ENABLED:-true}
+      - SECRET_KEY=${SECRET_KEY:-change-this-secret-key-in-production}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:-your-32-byte-encryption-key-change-in-production!!}
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - WATCHLIST_SCHEDULER_ENABLED=${WATCHLIST_SCHEDULER_ENABLED:-false}
+    ports:
+      - "8777:8000"
+    volumes:
+      - backend_data:/app/data
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - threat-intel-network
+
+  # Frontend
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+      args:
+        # Use /api/v1 directly since nginx routes /api/* to backend
+        - VITE_API_BASE_URL=/api/v1
+    container_name: threat-intel-frontend
+    restart: unless-stopped
+    ports:
+      - "4765:80"
+    depends_on:
+      - backend
+    networks:
+      - threat-intel-network
+
+volumes:
+  redis_data:
+    driver: local
+  postgres_data:
+    driver: local
+  backend_data:
+    driver: local
+
+networks:
+  threat-intel-network:
+    driver: bridge
+

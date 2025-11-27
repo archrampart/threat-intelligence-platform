@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark light;
+}
+
+body {
+  @apply antialiased;
+  background-color: rgb(249 250 251); /* slate-50 for light mode */
+  color: rgb(15 23 42); /* slate-900 for light mode */
+}
+
+body.dark {
+  background-color: rgb(2 6 23); /* slate-950 for dark mode */
+  color: rgb(241 245 249); /* slate-100 for dark mode */
+}
+
+body.light {
+  background-color: rgb(249 250 251); /* slate-50 for light mode */
+  color: rgb(15 23 42); /* slate-900 for light mode */
+}
+
+a {
+  color: rgb(37 99 235); /* brand-600 for light mode */
+}
+
+body.dark a {
+  color: rgb(96 165 250); /* brand-400 for dark mode */
+}
+
+a:hover {
+  color: rgb(29 78 216); /* brand-700 for light mode */
+}
+
+body.dark a:hover {
+  color: rgb(147 197 253); /* brand-300 for dark mode */
+}
