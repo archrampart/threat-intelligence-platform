@@ -119,6 +119,7 @@ temp/
 !tsconfig.json
 !tsconfig.node.json
 *.html
+!frontend/index.html
 *.txt
 !requirements.txt
 !supported_hash_formats.txt
