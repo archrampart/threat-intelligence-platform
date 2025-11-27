@@ -5,7 +5,7 @@ import { Search, AlertCircle, CheckCircle, XCircle, Clock, Shield, Filter, X } f
 
 import { apiClient } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
-import type { IOCQueryRequest, IOCQueryResponse, IOCQueryHistoryListResponse } from "@/features/ioc/types";
+import type { IOCQueryRequest, IOCQueryResponse, IOCQueryHistoryListResponse, IOCSourceResult } from "@/features/ioc/types";
 
 const IocSearchPage = () => {
   const { user } = useAuth();
@@ -221,7 +221,7 @@ const IocSearchPage = () => {
               return "clean";
             };
 
-            const groupedSources = queryMutation.data.queried_sources.reduce((acc, source) => {
+            const groupedSources = queryMutation.data.queried_sources.reduce((acc: Record<string, typeof queryMutation.data.queried_sources>, source) => {
               const riskLevel = getRiskLevel(source.risk_score);
               if (!acc[riskLevel]) {
                 acc[riskLevel] = [];
@@ -249,7 +249,7 @@ const IocSearchPage = () => {
                         </span>
                       </div>
                       <div className="space-y-2">
-                        {sources.map((source, idx) => (
+                        {sources.map((source: typeof queryMutation.data.queried_sources[0], idx: number) => (
                           <div key={idx} className="flex items-center justify-between rounded-lg bg-slate-900/40 dark:bg-slate-900/40 light:bg-slate-100 px-3 py-2">
                             <div className="flex items-center gap-3">
                               {getStatusIcon(source.status)}
@@ -526,7 +526,7 @@ const IocSearchPage = () => {
                     {item.queried_sources && item.queried_sources.length > 0 && (
                       <div className="mt-2 flex flex-wrap items-center gap-2">
                         <span className="text-xs font-medium text-slate-400 dark:text-slate-400 light:text-slate-600">Sources:</span>
-                        {item.queried_sources.map((source, idx) => {
+                        {item.queried_sources.map((source: IOCSourceResult, idx: number) => {
                           const sourceRiskLevel = source.risk_score !== null && source.risk_score !== undefined
                             ? (source.risk_score >= 0.8 ? "high" : source.risk_score >= 0.5 ? "medium" : source.risk_score >= 0.2 ? "low" : "clean")
                             : "unknown";
