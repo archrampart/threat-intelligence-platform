@@ -116,6 +116,8 @@ temp/
 *.json
 !package.json
 !package-lock.json
+!tsconfig.json
+!tsconfig.node.json
 *.html
 *.txt
 !requirements.txt
