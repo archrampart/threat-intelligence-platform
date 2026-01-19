@@ -49,9 +49,9 @@ echo -e "${GREEN}║  API Docs:      http://localhost:8777/docs                 
 echo -e "${GREEN}╚════════════════════════════════════════════════════════════╝${NC}"
 echo
 echo -e "${YELLOW}Default Credentials:${NC}"
-echo -e "  Admin:   admin@example.com / admin123"
-echo -e "  Analyst: analyst@example.com / analyst123"
-echo -e "  Viewer:  viewer@example.com / viewer123"
+echo -e "  Admin:   admin / admin123"
+echo -e "  Analyst: analyst / analyst123"
+echo -e "  Viewer:  viewer / viewer123"
 echo
 echo -e "${BLUE}Use 'docker-compose logs -f' to view logs${NC}"
 echo -e "${BLUE}Use 'docker-compose down' to stop services${NC}"
