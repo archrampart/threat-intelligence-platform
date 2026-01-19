@@ -30,9 +30,9 @@ This will start:
 - Frontend (React + Nginx)
 
 **Access URLs:**
-- Frontend: http://localhost
-- Backend API: http://localhost:8000
-- API Documentation: http://localhost:8000/docs
+- Frontend: http://localhost:4765
+- Backend API: http://localhost:8777
+- API Documentation: http://localhost:8777/docs
 
 ### Option 2: Local Development
 
@@ -158,16 +158,17 @@ cp .env.example .env
 ### ✅ Completed Modules
 
 - **Authentication**: JWT-based user login and registration
-- **IOC Query**: IP, domain, URL, hash querying with multiple threat intelligence sources
-- **Dashboard**: Statistics and metrics with charts
+- **IOC Query**: IP, Domain, URL, Hash, Email, and CVE querying with 69+ threat intelligence sources
+- **Dashboard**: Statistics and metrics with interactive charts
 - **CVE Database**: NIST NVD integration with search and filtering
 - **Watchlist**: Asset monitoring and alert system
-- **Reports**: Generate reports from IOC queries (PDF, HTML, JSON, CSV)
-- **API Key Management**: Encrypted API key management
-- **API Source Management**: Add custom API sources dynamically
-- **Alert System**: Alert notifications for watchlist items
+- **Reports**: Generate comprehensive reports (PDF, HTML, JSON) with executive summary
+- **API Key Management**: Encrypted API key management (AES-256)
+- **API Source Management**: 69 pre-configured sources + custom API sources
+- **Alert System**: Real-time alert notifications for watchlist items
 - **Redis Caching**: High-performance caching for IOC and CVE queries
 - **Background Jobs**: Automated watchlist monitoring
+- **User Roles**: Admin, Analyst, and Viewer role-based access control
 
 ### 🔄 Development Status
 
