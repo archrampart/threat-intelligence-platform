@@ -1,7 +1,13 @@
 """Seed predefined API sources to database."""
 
+import logging
+from sqlalchemy.exc import IntegrityError
 from app.db.base import SessionLocal
 from app.models.api_source import APISource, APIType, AuthenticationType
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def seed_predefined_apis() -> None:
@@ -1608,54 +1614,74 @@ def seed_predefined_apis() -> None:
 
         added_count = 0
         updated_count = 0
+        failed_count = 0
         
         for api_data in predefined_apis:
-            api_id = f"predefined-{api_data['name']}"
-            # Check by both id AND name to handle existing records
-            existing = db.query(APISource).filter(
-                (APISource.id == api_id) | (APISource.name == api_data['name'])
-            ).first()
-            
-            if existing:
-                # Update existing API source
-                existing.display_name = api_data["display_name"]
-                existing.description = api_data["description"]
-                existing.base_url = api_data["base_url"]
-                existing.documentation_url = api_data.get("documentation_url")
-                existing.supported_ioc_types = api_data["supported_ioc_types"]
-                existing.authentication_type = api_data["authentication_type"]
-                existing.request_config = api_data.get("request_config")
-                existing.response_config = api_data.get("response_config")
-                existing.rate_limit_config = api_data.get("rate_limit_config")
-                existing.is_active = True
-                updated_count += 1
-            else:
-                # Create new API source
-                api_source = APISource(
-                    id=api_id,
-                    name=api_data["name"],
-                    display_name=api_data["display_name"],
-                    description=api_data["description"],
-                    api_type=APIType.PREDEFINED,
-                    base_url=api_data["base_url"],
-                    documentation_url=api_data.get("documentation_url"),
-                    supported_ioc_types=api_data["supported_ioc_types"],
-                    authentication_type=api_data["authentication_type"],
-                    request_config=api_data.get("request_config"),
-                    response_config=api_data.get("response_config"),
-                    rate_limit_config=api_data.get("rate_limit_config"),
-                    is_active=True,
-                    created_by=None,  # System created
-                )
-                db.add(api_source)
-                added_count += 1
+            try:
+                # Use a nested transaction (savepoint) for each item
+                # This ensures that if one fails, others can still proceed
+                with db.begin_nested():
+                    api_id = f"predefined-{api_data['name']}"
+                    
+                    # Check by both id AND name to handle existing records
+                    existing = db.query(APISource).filter(
+                        (APISource.id == api_id) | (APISource.name == api_data['name'])
+                    ).first()
+                    
+                    if existing:
+                        # Update existing API source
+                        existing.display_name = api_data["display_name"]
+                        existing.description = api_data["description"]
+                        existing.base_url = api_data["base_url"]
+                        existing.documentation_url = api_data.get("documentation_url")
+                        existing.supported_ioc_types = api_data["supported_ioc_types"]
+                        existing.authentication_type = api_data["authentication_type"]
+                        existing.request_config = api_data.get("request_config")
+                        existing.response_config = api_data.get("response_config")
+                        existing.rate_limit_config = api_data.get("rate_limit_config")
+                        existing.is_active = True
+                        updated_count += 1
+                        logger.info(f"Updated API source: {api_data['name']}")
+                    else:
+                        # Create new API source
+                        api_source = APISource(
+                            id=api_id,
+                            name=api_data["name"],
+                            display_name=api_data["display_name"],
+                            description=api_data["description"],
+                            api_type=APIType.PREDEFINED,
+                            base_url=api_data["base_url"],
+                            documentation_url=api_data.get("documentation_url"),
+                            supported_ioc_types=api_data["supported_ioc_types"],
+                            authentication_type=api_data["authentication_type"],
+                            request_config=api_data.get("request_config"),
+                            response_config=api_data.get("response_config"),
+                            rate_limit_config=api_data.get("rate_limit_config"),
+                            is_active=True,
+                            created_by=None,  # System created
+                        )
+                        db.add(api_source)
+                        added_count += 1
+                        logger.info(f"Added API source: {api_data['name']}")
+            except IntegrityError as ie:
+                logger.error(f"Integrity Error seeding {api_data['name']}: {ie}")
+                failed_count += 1
+                # Nested transaction rollback happens automatically on exit
+            except Exception as e:
+                logger.error(f"Error seeding {api_data['name']}: {e}")
+                failed_count += 1
 
         db.commit()
-        print(f"Successfully processed {len(predefined_apis)} predefined API sources.")
-        print(f"  - Added: {added_count} new API sources")
-        print(f"  - Updated: {updated_count} existing API sources")
+        logger.info(f"Successfully processed predefined API sources.")
+        logger.info(f"  - Added: {added_count}")
+        logger.info(f"  - Updated: {updated_count}")
+        logger.info(f"  - Failed: {failed_count}")
+        
+        print(f"Seeding complete. Added: {added_count}, Updated: {updated_count}, Failed: {failed_count}")
+
     except Exception as e:
         db.rollback()
+        logger.error(f"Critical error in seed_predefined_apis: {e}")
         print(f"Error seeding predefined APIs: {e}")
         raise
     finally:
