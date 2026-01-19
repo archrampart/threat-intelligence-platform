@@ -1611,7 +1611,10 @@ def seed_predefined_apis() -> None:
         
         for api_data in predefined_apis:
             api_id = f"predefined-{api_data['name']}"
-            existing = db.query(APISource).filter(APISource.id == api_id).first()
+            # Check by both id AND name to handle existing records
+            existing = db.query(APISource).filter(
+                (APISource.id == api_id) | (APISource.name == api_data['name'])
+            ).first()
             
             if existing:
                 # Update existing API source
