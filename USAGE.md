@@ -92,6 +92,8 @@ Query Indicators of Compromise (IOCs) across multiple threat intelligence source
 - **Domain**: Domain names (e.g., `example.com`)
 - **URL**: Full URLs (e.g., `https://example.com/malware.exe`)
 - **Hash**: MD5, SHA1, SHA256 (e.g., `44d88612fea8a8f36de82e1278abb02f`)
+- **Email**: Email addresses (e.g., `suspicious@example.com`)
+- **CVE**: Common Vulnerabilities and Exposures (e.g., `CVE-2024-1234`)
 
 ### Performing a Query
 
@@ -248,8 +250,14 @@ Generate comprehensive reports from IOC queries and watchlist results.
 3. Select:
    - **Report Type**: IOC Query Report or Watchlist Report
    - **Data Source**: Select query or watchlist
-   - **Format**: PDF, HTML, or JSON
+   - **Format**: PDF, HTML, JSON, or CSV
 4. Click **Generate**
+
+### Sharing Reports
+
+1. Create a Public Link for any report
+2. Set expiration (1 hour, 1 day, 7 days, or never)
+3. Share the link with stakeholders (Login required or public access options)
 
 ### Report Formats
 
@@ -299,18 +307,21 @@ Manage API keys for threat intelligence sources securely.
 
 ### Supported API Sources
 
+The platform supports **69+ threat intelligence sources** out of the box, including:
+
 - **VirusTotal**: File, URL, IP, and domain analysis
-  - Requires: API key
-  - Rate limit: 500 requests/day (free tier)
 - **AbuseIPDB**: IP abuse reports and blacklist checking
-  - Requires: API key
-  - Rate limit: 1000 requests/day (free tier)
 - **OTX (AlienVault)**: Community-based threat intelligence
-  - Requires: API key
-  - Rate limit: 10,000 requests/day (free tier)
-- **NIST NVD**: CVE database
-  - No API key required
-  - Rate limit: 5 requests/second
+- **NIST NVD**: CVE database (No API Key required)
+- **URLScan.io**: Website scanner and URL analysis
+- **ThreatMiner**: Data mining for threat intelligence
+- **GreyNoise**: Internet-wide scanner data
+- **Spamhaus ZEN**: IP blocklist checking
+- **PhishTank**: Phishing URL database
+- **Circl.lu**: Passive DNS and SSL services
+- And many more free and commercial sources!
+
+> **Note**: Some sources require an API key to function. Rate limits apply based on your subscription with the provider.
 
 ### API Key Security
 
@@ -547,6 +558,17 @@ docker-compose logs -f backend
 
 # Frontend only
 docker-compose logs -f frontend
+```
+
+#### Docker Update Issues
+
+If you updated the application but don't see changes, try rebuilding without cache:
+
+```bash
+docker-compose down -v
+git pull
+docker-compose build --no-cache
+docker-compose up -d
 ```
 
 #### Local Development Logs
