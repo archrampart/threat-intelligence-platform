@@ -34,6 +34,14 @@ This will start:
 - Backend API: http://localhost:8777
 - API Documentation: http://localhost:8777/docs
 
+**Default Users:**
+
+| Username | Password | Role |
+|----------|----------|------|
+| `admin` | `admin123` | ADMIN |
+| `analyst` | `analyst123` | ANALYST |
+| `viewer` | `viewer123` | VIEWER |
+
 ### Option 2: Local Development
 
 #### Start with Script
