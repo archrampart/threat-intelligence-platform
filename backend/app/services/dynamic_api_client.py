@@ -60,7 +60,7 @@ class DynamicAPIClient:
 
     def _build_body(self, ioc_type: str, ioc_value: str) -> Optional[dict[str, Any]]:
         """Build request body from template."""
-        body_template = self.request_config.get("body_template")
+        body_template = self.request_config.get("body_template") or self.request_config.get("body")
         if not body_template:
             return None
 
@@ -167,8 +167,44 @@ class DynamicAPIClient:
             # Parse response
             try:
                 response_data = response.json()
+                # Handle JSON list responses (blocklists like feodotracker)
+                if isinstance(response_data, list):
+                    found = False
+                    for item in response_data:
+                        if isinstance(item, dict):
+                            for v in item.values():
+                                if isinstance(v, str) and ioc_value.lower() in v.lower():
+                                    found = True
+                                    break
+                        elif isinstance(item, str) and ioc_value.lower() in item.lower():
+                            found = True
+                        if found:
+                            break
+                    response_data = {
+                        "found": found,
+                        "risk_score": 0.9 if found else 0.0,
+                        "total_entries": len(response_data),
+                        "description": f"{'FOUND in blocklist' if found else 'Not found in blocklist'} ({len(response_data)} entries)",
+                    }
             except ValueError:
-                response_data = {"text": response.text}
+                # Handle plaintext responses (blocklists, IP lists, etc.)
+                text = response.text.strip()
+                lines = text.split("\n")
+                found = False
+                for line in lines:
+                    line = line.strip()
+                    if not line or line.startswith("#") or line.startswith("//"):
+                        continue
+                    if ioc_value.lower() in line.lower():
+                        found = True
+                        break
+                total = len([l for l in lines if l.strip() and not l.strip().startswith("#")])
+                response_data = {
+                    "found": found,
+                    "risk_score": 0.9 if found else 0.0,
+                    "total_entries": total,
+                    "description": f"{'FOUND in blocklist' if found else 'Not found in blocklist'} ({total} entries)",
+                }
 
             parsed = self._parse_response(response_data)
             parsed["source"] = self.api_source.name

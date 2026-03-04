@@ -172,23 +172,23 @@ def export_query_history(
         )
     
     # JSON export
-        try:
-            json_content = json.dumps(items, indent=2, default=str)
-            
-            # Ensure content is encoded as UTF-8 bytes
-            if isinstance(json_content, str):
-                json_content = json_content.encode('utf-8')
-            
-            return Response(
-                content=json_content,
-                media_type="application/json; charset=utf-8",
-                headers={
-                    "Content-Disposition": f'attachment; filename="ioc_query_history_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json"'
-                },
-            )
-        except Exception as e:
-            logger.error(f"Error creating JSON export: {e}", exc_info=True)
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to create JSON export: {str(e)}"
-            )
+    try:
+        json_content = json.dumps(items, indent=2, default=str)
+
+        # Ensure content is encoded as UTF-8 bytes
+        if isinstance(json_content, str):
+            json_content = json_content.encode('utf-8')
+
+        return Response(
+            content=json_content,
+            media_type="application/json; charset=utf-8",
+            headers={
+                "Content-Disposition": f'attachment; filename="ioc_query_history_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json"'
+            },
+        )
+    except Exception as e:
+        logger.error(f"Error creating JSON export: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create JSON export: {str(e)}"
+        )

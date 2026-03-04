@@ -50,7 +50,8 @@ def seed_predefined_apis() -> None:
                 "request_config": {
                     "method": "GET",
                     "endpoint_template": "/check",
-                    "query_params": {"ipAddress": "{ioc_value}", "key": "{api_key}"},
+                    "query_params": {"ipAddress": "{ioc_value}", "maxAgeInDays": "90"},
+                    "headers": {"Key": "{api_key}", "Accept": "application/json"},
                 },
                 "response_config": {
                     "risk_score_path": "data.abuseConfidencePercentage",
@@ -110,7 +111,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "urlhaus",
                 "display_name": "URLhaus (abuse.ch)",
-                "description": "Malware URL database - Free and open source",
+                "description": "Malware URL database - API now requires authentication",
+                "is_active": False,
                 "base_url": "https://urlhaus-api.abuse.ch/v1",
                 "documentation_url": "https://urlhaus.abuse.ch/api/",
                 "supported_ioc_types": ["url", "domain"],
@@ -251,7 +253,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "threatfox",
                 "display_name": "ThreatFox (abuse.ch)",
-                "description": "IOC database - Free and open source",
+                "description": "IOC database - API now requires authentication",
+                "is_active": False,
                 "base_url": "https://threatfox-api.abuse.ch/api/v1",
                 "documentation_url": "https://threatfox.abuse.ch/api/",
                 "supported_ioc_types": ["ip", "domain", "url", "hash"],
@@ -259,8 +262,8 @@ def seed_predefined_apis() -> None:
                 "request_config": {
                     "method": "POST",
                     "endpoint_template": "/",
-                    "headers": {"Content-Type": "application/x-www-form-urlencoded"},
-                    "body": "query=search_ioc&search_term={ioc_value}",
+                    "headers": {"Content-Type": "application/json"},
+                    "body_template": "{\"query\": \"search_ioc\", \"search_term\": \"{ioc_value}\"}",
                 },
                 "response_config": {
                     "risk_score_path": "query_status",
@@ -455,9 +458,9 @@ def seed_predefined_apis() -> None:
                     "endpoint_template": "/ipblocklist_recommended.json",
                 },
                 "response_config": {
-                    "risk_score_path": "ip_address",
-                    "status_path": "ip_address",
-                    "data_path": "data",
+                    "risk_score_path": "risk_score",
+                    "status_path": "found",
+                    "data_path": "description",
                 },
                 "rate_limit_config": {
                     "limit": 1000,
@@ -526,9 +529,9 @@ def seed_predefined_apis() -> None:
                     "endpoint_template": "/all.txt",
                 },
                 "response_config": {
-                    "risk_score_path": "found",  # Custom parser needed
+                    "risk_score_path": "risk_score",
                     "status_path": "found",
-                    "data_path": "list",
+                    "data_path": "description",
                 },
                 "rate_limit_config": {
                     "limit": 100,
@@ -548,9 +551,9 @@ def seed_predefined_apis() -> None:
                     "endpoint_template": "/greensnow.txt",
                 },
                 "response_config": {
-                    "risk_score_path": "found",
+                    "risk_score_path": "risk_score",
                     "status_path": "found",
-                    "data_path": "list",
+                    "data_path": "description",
                 },
                 "rate_limit_config": {
                     "limit": 50,
@@ -570,9 +573,9 @@ def seed_predefined_apis() -> None:
                     "endpoint_template": "/feed.txt",
                 },
                 "response_config": {
-                    "risk_score_path": "found",
+                    "risk_score_path": "risk_score",
                     "status_path": "found",
-                    "data_path": "list",
+                    "data_path": "description",
                 },
                 "rate_limit_config": {
                     "limit": 100,
@@ -580,9 +583,10 @@ def seed_predefined_apis() -> None:
                 },
             },
             {
-                "name": "phishtank",
-                "display_name": "PhishTank",
-                "description": "Community phishing URL database",
+                "name": "phishtank_free",
+                "display_name": "PhishTank (Free Feed)",
+                "description": "Community phishing URL database (unreliable)",
+                "is_active": False,
                 "base_url": "http://data.phishtank.com",
                 "documentation_url": "https://www.phishtank.com/",
                 "supported_ioc_types": ["url", "domain"],
@@ -604,7 +608,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "circl_passivedns",
                 "display_name": "CIRCL Passive DNS",
-                "description": "CIRCL.LU Passive DNS database - DNS query history",
+                "description": "CIRCL.LU Passive DNS (requires registration/auth)",
+                "is_active": False,
                 "base_url": "https://www.circl.lu/pdns/query",
                 "documentation_url": "https://www.circl.lu/services/passive-dns/",
                 "supported_ioc_types": ["domain", "ip"],
@@ -626,7 +631,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "bgpview",
                 "display_name": "BGPView",
-                "description": "AS/BGP/IP prefix information - Network intelligence",
+                "description": "AS/BGP/IP prefix information - API dead/unreachable",
+                "is_active": False,
                 "base_url": "https://api.bgpview.io",
                 "documentation_url": "https://bgpview.docs.apiary.io/",
                 "supported_ioc_types": ["ip"],
@@ -680,9 +686,9 @@ def seed_predefined_apis() -> None:
                     "endpoint_template": "/?q={ioc_value}&output=json",
                 },
                 "response_config": {
-                    "risk_score_path": "issuer_name",
-                    "status_path": "id",
-                    "data_path": "common_name",
+                    "risk_score_path": "",
+                    "status_path": "",
+                    "data_path": "$",
                 },
                 "rate_limit_config": {
                     "limit": 500,
@@ -702,9 +708,9 @@ def seed_predefined_apis() -> None:
                     "endpoint_template": "/compromised-ips.txt",
                 },
                 "response_config": {
-                    "risk_score_path": "found",
+                    "risk_score_path": "risk_score",
                     "status_path": "found",
-                    "data_path": "list",
+                    "data_path": "description",
                 },
                 "rate_limit_config": {
                     "limit": 100,
@@ -714,7 +720,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "dnsgrep",
                 "display_name": "DNSGrep",
-                "description": "Rapid7 Sonar DNS dataset search",
+                "description": "Rapid7 Sonar DNS (now paid - requires API key)",
+                "is_active": False,
                 "base_url": "https://dns.bufferover.run/dns",
                 "documentation_url": "https://github.com/erbbysam/DNSGrep",
                 "supported_ioc_types": ["domain"],
@@ -746,9 +753,9 @@ def seed_predefined_apis() -> None:
                     "endpoint_template": "/ipquery/{ioc_value}",
                 },
                 "response_config": {
-                    "risk_score_path": "status",
+                    "risk_score_path": "",
                     "status_path": "status",
-                    "data_path": "pas",
+                    "data_path": "$",
                 },
                 "rate_limit_config": {
                     "limit": 100,
@@ -758,7 +765,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "phishstats",
                 "display_name": "PhishStats",
-                "description": "Phishing tracker - Active phishing URLs",
+                "description": "Phishing tracker - API endpoint dead (404)",
+                "is_active": False,
                 "base_url": "https://phishstats.info/api",
                 "documentation_url": "https://phishstats.info/",
                 "supported_ioc_types": ["url", "domain"],
@@ -780,7 +788,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "sorbs",
                 "display_name": "SORBS (Spam/Proxy Blacklist)",
-                "description": "Multi-category IP blacklist - DNSBL",
+                "description": "Multi-category IP blacklist - DNSBL (DEFUNCT)",
+                "is_active": False,
                 "base_url": "http://dnsbl.sorbs.net",
                 "documentation_url": "http://www.sorbs.net/",
                 "supported_ioc_types": ["ip"],
@@ -829,7 +838,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "cleanbrowsing",
                 "display_name": "CleanBrowsing",
-                "description": "Malicious domain DNS filtering",
+                "description": "DoH service - not a threat intel API",
+                "is_active": False,
                 "base_url": "https://doh.cleanbrowsing.org",
                 "documentation_url": "https://cleanbrowsing.org/",
                 "supported_ioc_types": ["domain"],
@@ -861,9 +871,9 @@ def seed_predefined_apis() -> None:
                     "endpoint_template": "/ci-badguys.txt",
                 },
                 "response_config": {
-                    "risk_score_path": "found",
+                    "risk_score_path": "risk_score",
                     "status_path": "found",
-                    "data_path": "list",
+                    "data_path": "description",
                 },
                 "rate_limit_config": {
                     "limit": 100,
@@ -874,7 +884,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "dronebl",
                 "display_name": "DroneBL (IRC Abuse)",
-                "description": "IRC/DDoS/proxy abuse IP blacklist",
+                "description": "IRC/DDoS/proxy abuse (DNSBL - returns HTML)",
+                "is_active": False,
                 "base_url": "https://dronebl.org",
                 "documentation_url": "https://dronebl.org/docs/howtouse",
                 "supported_ioc_types": ["ip"],
@@ -896,7 +907,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "spamcop",
                 "display_name": "Spamcop Blacklist",
-                "description": "Spam source IP blacklist - DNSBL",
+                "description": "Spam source IP blacklist - DNSBL (not HTTP API)",
+                "is_active": False,
                 "base_url": "http://www.spamcop.net",
                 "documentation_url": "https://www.spamcop.net/bl.shtml",
                 "supported_ioc_types": ["ip"],
@@ -918,7 +930,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "multiproxy",
                 "display_name": "Multiproxy.org",
-                "description": "Open proxy IP list",
+                "description": "Open proxy IP list (DEFUNCT)",
+                "is_active": False,
                 "base_url": "https://multiproxy.org",
                 "documentation_url": "https://multiproxy.org/",
                 "supported_ioc_types": ["ip"],
@@ -940,7 +953,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "viewdns",
                 "display_name": "ViewDNS.info",
-                "description": "DNS tools - reverse IP, DNS records, etc.",
+                "description": "DNS tools - requires API key for JSON (DEFUNCT)",
+                "is_active": False,
                 "base_url": "https://viewdns.info",
                 "documentation_url": "https://viewdns.info/",
                 "supported_ioc_types": ["domain", "ip"],
@@ -962,7 +976,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "hackertarget",
                 "display_name": "HackerTarget",
-                "description": "Free security and DNS tools",
+                "description": "Free DNS tools - not threat intelligence data",
+                "is_active": False,
                 "base_url": "https://api.hackertarget.com",
                 "documentation_url": "https://hackertarget.com/",
                 "supported_ioc_types": ["domain", "ip"],
@@ -984,7 +999,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "cybercrime_tracker",
                 "display_name": "CyberCrime Tracker",
-                "description": "Active C2 server tracker",
+                "description": "Active C2 server tracker (DEFUNCT)",
+                "is_active": False,
                 "base_url": "http://cybercrime-tracker.net",
                 "documentation_url": "http://cybercrime-tracker.net/",
                 "supported_ioc_types": ["ip", "domain"],
@@ -1006,7 +1022,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "psbdmp",
                 "display_name": "Psbdmp (Pastebin Dumps)",
-                "description": "Pastebin paste search and monitoring",
+                "description": "Pastebin paste search and monitoring (DEFUNCT)",
+                "is_active": False,
                 "base_url": "https://psbdmp.ws",
                 "documentation_url": "https://psbdmp.ws/api",
                 "supported_ioc_types": ["email", "hash"],
@@ -1028,7 +1045,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "dnsdumpster",
                 "display_name": "DNS Dumpster",
-                "description": "DNS reconnaissance and subdomain discovery",
+                "description": "DNS reconnaissance - no public API (DEFUNCT)",
+                "is_active": False,
                 "base_url": "https://dnsdumpster.com",
                 "documentation_url": "https://dnsdumpster.com/",
                 "supported_ioc_types": ["domain"],
@@ -1050,7 +1068,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "gravatar",
                 "display_name": "Gravatar",
-                "description": "Email to profile image lookup",
+                "description": "Email to profile image lookup (not threat intel)",
+                "is_active": False,
                 "base_url": "https://www.gravatar.com",
                 "documentation_url": "https://en.gravatar.com/site/implement/",
                 "supported_ioc_types": ["email"],
@@ -1116,7 +1135,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "quad9_dns",
                 "display_name": "Quad9 DNS",
-                "description": "Quad9 threat blocking DNS lookup",
+                "description": "DoH service - not a threat intel API",
+                "is_active": False,
                 "base_url": "https://dns.quad9.net",
                 "documentation_url": "https://www.quad9.net/",
                 "supported_ioc_types": ["domain"],
@@ -1138,7 +1158,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "adguard_dns",
                 "display_name": "AdGuard DNS",
-                "description": "AdGuard malware/ad blocking DNS",
+                "description": "DoH service - not a threat intel API",
+                "is_active": False,
                 "base_url": "https://dns.adguard.com",
                 "documentation_url": "https://adguard.com/en/adguard-dns/overview.html",
                 "supported_ioc_types": ["domain"],
@@ -1167,10 +1188,10 @@ def seed_predefined_apis() -> None:
                 "authentication_type": AuthenticationType.NONE,
                 "request_config": {
                     "method": "GET",
-                    "endpoint_template": "/ripe/inetnum/{ioc_value}.json",
+                    "endpoint_template": "/search.json?query-string={ioc_value}&type-filter=inetnum&flags=no-referenced",
                 },
                 "response_config": {
-                    "risk_score_path": "objects",
+                    "risk_score_path": "",
                     "status_path": "status",
                     "data_path": "objects",
                 },
@@ -1190,10 +1211,11 @@ def seed_predefined_apis() -> None:
                 "request_config": {
                     "method": "GET",
                     "endpoint_template": "/rest/ip/{ioc_value}",
+                    "headers": {"Accept": "application/json"},
                 },
                 "response_config": {
-                    "risk_score_path": "net",
-                    "status_path": "net",
+                    "risk_score_path": "",
+                    "status_path": "net.handle",
                     "data_path": "net",
                 },
                 "rate_limit_config": {
@@ -1204,7 +1226,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "circl_passivessl",
                 "display_name": "CIRCL Passive SSL",
-                "description": "CIRCL.LU SSL certificate database",
+                "description": "CIRCL.LU SSL database (requires registration/auth)",
+                "is_active": False,
                 "base_url": "https://www.circl.lu/pssl/query",
                 "documentation_url": "https://www.circl.lu/services/passive-ssl/",
                 "supported_ioc_types": ["domain", "ip"],
@@ -1226,7 +1249,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "commoncrawl",
                 "display_name": "Common Crawl",
-                "description": "Web crawl data archive",
+                "description": "Web crawl data archive - not threat intelligence",
+                "is_active": False,
                 "base_url": "https://index.commoncrawl.org",
                 "documentation_url": "https://commoncrawl.org/",
                 "supported_ioc_types": ["domain", "url"],
@@ -1248,7 +1272,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "archiveorg",
                 "display_name": "Archive.org (Wayback Machine)",
-                "description": "Historical web page snapshots",
+                "description": "Historical web page snapshots - not threat intelligence",
+                "is_active": False,
                 "base_url": "https://archive.org/wayback",
                 "documentation_url": "https://archive.org/help/wayback_api.php",
                 "supported_ioc_types": ["url", "domain"],
@@ -1270,7 +1295,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "botvrij",
                 "display_name": "BotVrij.eu",
-                "description": "IRC botnet IP blacklist",
+                "description": "IRC botnet IP blacklist (DEFUNCT)",
+                "is_active": False,
                 "base_url": "https://www.botvrij.eu",
                 "documentation_url": "https://www.botvrij.eu/",
                 "supported_ioc_types": ["ip"],
@@ -1292,7 +1318,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "honeypot_project",
                 "display_name": "Honeypot Project",
-                "description": "Honeypot attacker IP collection",
+                "description": "Honeypot attacker IP collection (wrong URL - DEFUNCT)",
+                "is_active": False,
                 "base_url": "https://threatfox.abuse.ch",
                 "documentation_url": "https://threatfox.abuse.ch/",
                 "supported_ioc_types": ["ip"],
@@ -1324,8 +1351,8 @@ def seed_predefined_apis() -> None:
                     "endpoint_template": "/ip/{ioc_value}?json",
                 },
                 "response_config": {
-                    "risk_score_path": "attacks",
-                    "status_path": "count",
+                    "risk_score_path": "ip.maxrisk",
+                    "status_path": "ip.count",
                     "data_path": "ip",
                 },
                 "rate_limit_config": {
@@ -1336,7 +1363,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "comodo_inspector",
                 "display_name": "Comodo Site Inspector",
-                "description": "Website malware scanner",
+                "description": "Website malware scanner (DISCONTINUED)",
+                "is_active": False,
                 "base_url": "https://siteinspector.comodo.com",
                 "documentation_url": "https://siteinspector.comodo.com/",
                 "supported_ioc_types": ["url", "domain"],
@@ -1358,7 +1386,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "malwarepatrol",
                 "display_name": "Malware Patrol",
-                "description": "Malware domain/IP database",
+                "description": "Malware domain/IP database (requires auth - DEFUNCT)",
+                "is_active": False,
                 "base_url": "https://www.malware.com.br",
                 "documentation_url": "https://www.malware.com.br/",
                 "supported_ioc_types": ["domain", "ip"],
@@ -1380,7 +1409,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "projectdiscovery_chaos",
                 "display_name": "ProjectDiscovery Chaos",
-                "description": "Public bug bounty subdomain data",
+                "description": "Public bug bounty subdomain data (requires API key)",
+                "is_active": False,
                 "base_url": "https://chaos-data.projectdiscovery.io",
                 "documentation_url": "https://chaos.projectdiscovery.io/",
                 "supported_ioc_types": ["domain"],
@@ -1402,7 +1432,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "cleantalk_blacklist",
                 "display_name": "CleanTalk",
-                "description": "Spam IP database",
+                "description": "Spam IP database (returns HTML, not JSON)",
+                "is_active": False,
                 "base_url": "https://cleantalk.org",
                 "documentation_url": "https://cleantalk.org/blacklists",
                 "supported_ioc_types": ["ip"],
@@ -1424,7 +1455,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "coinblocker_lists",
                 "display_name": "Coinblocker Lists",
-                "description": "Cryptocurrency miner IP/domain blacklist",
+                "description": "Cryptocurrency miner IP/domain blacklist (GitLab URL broken)",
+                "is_active": False,
                 "base_url": "https://gitlab.com/ZeroDot1/CoinBlockerLists",
                 "documentation_url": "https://zerodot1.gitlab.io/CoinBlockerLists/",
                 "supported_ioc_types": ["domain", "ip"],
@@ -1446,7 +1478,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "fortinet_blacklist",
                 "display_name": "Fortinet Threat Feed",
-                "description": "Fortinet public threat IP list",
+                "description": "Fortinet threat IP list (requires license - DEFUNCT)",
+                "is_active": False,
                 "base_url": "https://threatfeeds.fortiguard.com",
                 "documentation_url": "https://www.fortiguard.com/",
                 "supported_ioc_types": ["ip"],
@@ -1468,7 +1501,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "opendns_investigate",
                 "display_name": "OpenDNS (Cisco Umbrella)",
-                "description": "DNS security and threat intelligence",
+                "description": "DNS security (paid API - requires auth)",
+                "is_active": False,
                 "base_url": "https://investigate.api.umbrella.com",
                 "documentation_url": "https://docs.umbrella.com/",
                 "supported_ioc_types": ["domain"],
@@ -1491,7 +1525,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "threatminer",
                 "display_name": "ThreatMiner",
-                "description": "Open threat intelligence platform - IP, Domain, Hash analysis",
+                "description": "Open threat intelligence platform (DEPRECATED)",
+                "is_active": False,
                 "base_url": "https://api.threatminer.org/v2",
                 "documentation_url": "https://www.threatminer.org/api.php",
                 "supported_ioc_types": ["ip", "domain", "hash"],
@@ -1543,7 +1578,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "ransomwarelive",
                 "display_name": "Ransomware.live",
-                "description": "Ransomware group tracking - Victim and leak site monitoring",
+                "description": "Ransomware group tracking - endpoint does not query by IOC",
+                "is_active": False,
                 "base_url": "https://api.ransomware.live/v1",
                 "documentation_url": "https://www.ransomware.live/",
                 "supported_ioc_types": ["domain"],
@@ -1565,7 +1601,8 @@ def seed_predefined_apis() -> None:
             {
                 "name": "spamhaus_zen",
                 "display_name": "Spamhaus ZEN",
-                "description": "Combined spam/malware IP blocklist (DNSBL lookup)",
+                "description": "Combined spam/malware IP blocklist (DNSBL - not HTTP API)",
+                "is_active": False,
                 "base_url": "https://check.spamhaus.org",
                 "documentation_url": "https://www.spamhaus.org/zen/",
                 "supported_ioc_types": ["ip"],
@@ -1639,7 +1676,7 @@ def seed_predefined_apis() -> None:
                         existing.request_config = api_data.get("request_config")
                         existing.response_config = api_data.get("response_config")
                         existing.rate_limit_config = api_data.get("rate_limit_config")
-                        existing.is_active = True
+                        existing.is_active = api_data.get("is_active", True)
                         updated_count += 1
                         logger.info(f"Updated API source: {api_data['name']}")
                     else:
@@ -1657,7 +1694,7 @@ def seed_predefined_apis() -> None:
                             request_config=api_data.get("request_config"),
                             response_config=api_data.get("response_config"),
                             rate_limit_config=api_data.get("rate_limit_config"),
-                            is_active=True,
+                            is_active=api_data.get("is_active", True),
                             created_by=None,  # System created
                         )
                         db.add(api_source)

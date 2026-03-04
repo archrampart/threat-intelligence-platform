@@ -23,6 +23,24 @@ class IOCService:
     def __init__(self, db: Session) -> None:
         self.db = db
 
+    def _safe_float(self, value: any) -> Optional[float]:
+        """Safely convert a value to float for risk scores."""
+        if value is None:
+            return None
+        if isinstance(value, (int, float)):
+            return float(value)
+        if isinstance(value, bool):
+            return 0.9 if value else 0.0
+        if isinstance(value, str):
+            try:
+                return float(value)
+            except (ValueError, TypeError):
+                return None
+        if isinstance(value, (list, dict)):
+            # Non-empty list/dict indicates data was found
+            return 0.5 if value else None
+        return None
+
     def _get_risk_score_from_level(self, risk_level: Optional[str]) -> Optional[float]:
         """Convert risk level string to numeric score."""
         if not risk_level:
@@ -226,7 +244,7 @@ class IOCService:
             return IOCSourceResult(
                 source=api_source.name,
                 status=status,
-                risk_score=float(risk_score) if risk_score is not None else None,
+                risk_score=self._safe_float(risk_score),
                 description=description or f"Query completed with status: {status}",
                 raw=raw_data,
             )
@@ -296,7 +314,7 @@ class IOCService:
             return IOCSourceResult(
                 source=api_source.name,
                 status=status,
-                risk_score=float(risk_score) if risk_score is not None else None,
+                risk_score=self._safe_float(risk_score),
                 description=description or f"Query completed with status: {status}",
                 raw=raw_data,
             )
