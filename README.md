@@ -6,6 +6,9 @@ A web application for querying, analyzing, and reporting on IOC (Indicators of C
 
 ![Platform Demo](docs/assets/platform_demo.gif)
 
+*Dashboard · bulk IOC search with defanged input · CVE exploit intelligence (EPSS, CISA KEV, public exploits) ·
+dark web monitoring (leak sites, infostealers, forums, Telegram, source health) · reports · personal API key catalog*
+
 ## 🚀 Quick Start
 
 ### Requirements
