@@ -1,0 +1,22 @@
+# Runtime dependencies (Python >= 3.12)
+fastapi==0.162.0
+uvicorn[standard]==0.54.0
+python-multipart==0.0.33
+pydantic[email]==2.14.3
+pydantic-settings==2.16.2
+python-dotenv==1.2.4
+loguru==0.7.3
+sqlalchemy==2.1.8
+# psycopg[binary]==3.*  # PostgreSQL driver - required for production PostgreSQL
+alembic==1.20.1
+bcrypt==5.0.0
+PyJWT==2.15.1
+cryptography==50.0.2
+requests==2.34.2
+jsonpath-ng==1.16.0
+reportlab==5.1.0
+apscheduler==3.11.3
+redis==8.1.0
+defusedxml==0.7.1
+# Optional Telegram account (MTProto) monitoring
+telethon==1.45.0

@@ -1,0 +1,89 @@
+# Threat Intelligence Platform
+# Secrets are required: run ./docker-start.sh once (generates .env) or set them manually.
+
+services:
+  redis:
+    image: redis:8-alpine
+    container_name: tip-redis
+    command: ["redis-server", "--save", "60", "1", "--appendonly", "no", "--protected-mode", "yes", "--requirepass", "${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}"]
+    # Not published on the host: only reachable from the backend on the internal network.
+    volumes:
+      - redis-data:/data
+    networks: [backend]
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" --no-auth-warning ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    container_name: tip-backend
+    # Public resolvers for the outbound threat intelligence / dark web lookups
+    # (some Docker hosts cannot resolve external names with the default resolver)
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    # API is served to browsers through the frontend's nginx (/api). The direct port is
+    # bound to localhost only, for Swagger UI / debugging.
+    ports:
+      - "127.0.0.1:8777:8000"
+    environment:
+      - DATABASE_URL=sqlite:////app/data/threat_intel.db
+      - SECRET_KEY=${SECRET_KEY:?Set SECRET_KEY in .env}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:?Set ENCRYPTION_KEY in .env}
+      - DEFAULT_ADMIN_PASSWORD=${DEFAULT_ADMIN_PASSWORD:-}
+      - SEED_DEFAULT_USERS=${SEED_DEFAULT_USERS:-false}
+      - REDIS_ENABLED=true
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - ENVIRONMENT=production
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:4765}
+      - TRUST_PROXY_HEADERS=true
+      # Session cookies carry the Secure flag. Browsers accept it on http://localhost;
+      # set COOKIE_SECURE=false only for a plain-http deployment on another host.
+      - COOKIE_SECURE=${COOKIE_SECURE:-true}
+      - WATCHLIST_SCHEDULER_ENABLED=${WATCHLIST_SCHEDULER_ENABLED:-false}
+      - DARKWEB_MONITOR_ENABLED=${DARKWEB_MONITOR_ENABLED:-true}
+      - DARKWEB_SCAN_INTERVAL_MINUTES=${DARKWEB_SCAN_INTERVAL_MINUTES:-60}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - backend-data:/app/data
+    networks: [backend, frontend]
+    security_opt: ["no-new-privileges:true"]
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    container_name: tip-frontend
+    ports:
+      - "${FRONTEND_PORT:-4765}:8080"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks: [frontend]
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+
+networks:
+  backend:
+    internal: true
+  frontend:
+
+volumes:
+  redis-data:
+  backend-data:

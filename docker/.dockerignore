@@ -1,0 +1,36 @@
+# VCS / editor
+.git
+.gitignore
+.github
+.DS_Store
+.idea
+.vscode
+
+# Secrets - never bake into images
+.env
+**/.env
+**/.env.*
+!**/.env.example
+
+# Python
+**/__pycache__
+**/*.py[cod]
+**/.venv
+**/.venv-*
+**/venv
+**/.pytest_cache
+**/.coverage
+**/htmlcov
+**/*.log
+
+# Data
+**/*.db
+**/*.sqlite*
+backend/data/
+
+# Node
+**/node_modules
+frontend/dist
+
+# Docs / media
+docs/

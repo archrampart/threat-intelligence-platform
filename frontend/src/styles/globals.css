@@ -1,0 +1,76 @@
+@import 'tailwindcss';
+
+/*
+  Theme switching: TopBar toggles the "dark" / "light" class on <html> and <body>.
+  Base utilities are the dark theme; `light:` utilities override them (v3 plugin
+  `addVariant('light', '.light &')`). The `dark:` variant keeps its v3 selector.
+*/
+@custom-variant light (&:is(.light *));
+@custom-variant dark (&:is([data-theme="dark"] *));
+
+@theme {
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-300: #93c5fd;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-brand-800: #1e40af;
+  --color-brand-900: #1e3a8a;
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+:root {
+  color-scheme: dark light;
+}
+
+body {
+  @apply antialiased;
+  background-color: rgb(249 250 251); /* slate-50 for light mode */
+  color: rgb(15 23 42); /* slate-900 for light mode */
+}
+
+body.dark {
+  background-color: rgb(2 6 23); /* slate-950 for dark mode */
+  color: rgb(241 245 249); /* slate-100 for dark mode */
+}
+
+body.light {
+  background-color: rgb(249 250 251); /* slate-50 for light mode */
+  color: rgb(15 23 42); /* slate-900 for light mode */
+}
+
+a {
+  color: rgb(37 99 235); /* brand-600 for light mode */
+}
+
+body.dark a {
+  color: rgb(96 165 250); /* brand-400 for dark mode */
+}
+
+a:hover {
+  color: rgb(29 78 216); /* brand-700 for light mode */
+}
+
+body.dark a:hover {
+  color: rgb(147 197 253); /* brand-300 for dark mode */
+}
