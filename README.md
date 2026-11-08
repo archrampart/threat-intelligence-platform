@@ -39,11 +39,7 @@ default or weak secrets.
 **Access URLs:**
 - Frontend: http://localhost:4765 (the API is proxied under `/api`)
 - API Documentation: http://127.0.0.1:8777/docs (bound to localhost only)
-
-**First login (Docker):** an `admin` account is created on first start. Its password is
-`DEFAULT_ADMIN_PASSWORD` from `.env`, or a random one printed once in the backend log
-(`docker compose logs backend | grep "Initial admin"`). Demo users (`admin/admin123` ...)
-are only created in development or when `SEED_DEFAULT_USERS=true`.
+- First login: see [Default Credentials](#default-credentials)
 
 ### Option 2: Local Development
 
@@ -86,6 +82,24 @@ cd frontend
 npm install
 npm run dev
 ```
+
+### Default Credentials
+
+| Mode | Username | Password | Role |
+|------|----------|----------|------|
+| Docker / production | `admin` | `DEFAULT_ADMIN_PASSWORD` from `.env`, or a random one printed once in the backend log | Admin |
+| Local development (`ENVIRONMENT=development`) | `admin` | `admin123` | Admin |
+| | `analyst` | `analyst123` | Analyst |
+| | `viewer` | `viewer123` | Viewer (read-only) |
+
+Read the generated admin password with:
+
+```bash
+docker compose logs backend | grep "Initial admin"
+```
+
+The demo accounts are only created in development or when `SEED_DEFAULT_USERS=true`.
+Never enable them on an exposed instance, and change the admin password after the first login.
 
 ## 📁 Project Structure
 
