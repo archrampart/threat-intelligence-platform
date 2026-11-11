@@ -15,6 +15,30 @@ from app.utils.ioc_detector import detect_ioc_type
 router = APIRouter(prefix="/watchlists", tags=["watchlists"])
 
 
+def _parse_assets_json(assets_json: str | None) -> list:
+    """Parse the ``assets_json`` form field sent by the watchlist create / edit forms."""
+    from app.models.watchlist import IOCType
+    from app.schemas.watchlist import WatchlistAsset
+
+    if not assets_json:
+        return []
+    try:
+        data = json.loads(assets_json)
+        if not isinstance(data, list):
+            raise ValueError("expected a list of assets")
+        assets = [WatchlistAsset(**asset) for asset in data]
+        valid_types = {t.value for t in IOCType}
+        for asset in assets:
+            asset.ioc_value = asset.ioc_value.strip()
+            if asset.ioc_type not in valid_types:
+                raise ValueError(f"unsupported ioc_type '{asset.ioc_type}'")
+            if not asset.ioc_value:
+                raise ValueError("ioc_value must not be empty")
+        return assets
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Invalid assets JSON: {e}")
+
+
 @router.get("/", response_model=WatchlistListResponse, summary="Watchlist listesi")
 def list_watchlists(
     db: Session = Depends(get_db),
@@ -40,15 +64,16 @@ async def create_watchlist(
     description: str = Form(None),
     check_interval: int = Form(60),
     notification_enabled: bool = Form(True),
+    assets_json: str = Form(None),  # JSON string of manually added assets
     file: UploadFile = File(None),
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_user),
 ) -> Watchlist:
-    """Create a new watchlist. Optionally upload IOCs from a TXT file."""
+    """Create a new watchlist from manually added assets and/or a TXT file of IOCs."""
     from app.schemas.watchlist import WatchlistAsset
     from uuid import uuid4
-    
-    assets = []
+
+    assets = _parse_assets_json(assets_json)
     
     # If file is provided, parse it
     if file and file.filename:
@@ -184,17 +209,7 @@ async def update_watchlist(
     if not existing_watchlist:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Watchlist not found")
     
-    # Parse assets from JSON
-    assets = []
-    if assets_json:
-        try:
-            assets_data = json.loads(assets_json)
-            assets = [WatchlistAsset(**asset) for asset in assets_data]
-        except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid assets JSON: {str(e)}"
-            )
+    assets = _parse_assets_json(assets_json)
     
     # If file is provided, parse it and add to assets
     if file and file.filename:

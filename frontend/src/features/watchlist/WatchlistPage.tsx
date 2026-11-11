@@ -482,6 +482,17 @@ const CreateWatchlistModal = ({
       formDataToSend.append("check_interval", data.formData.check_interval.toString());
       formDataToSend.append("notification_enabled", data.formData.notification_enabled.toString());
 
+      // Manually added assets (the file upload is parsed server-side)
+      if (data.formData.assets.length > 0) {
+        formDataToSend.append("assets_json", JSON.stringify(data.formData.assets.map(asset => ({
+          ioc_type: asset.ioc_type,
+          ioc_value: asset.ioc_value,
+          description: asset.description,
+          risk_threshold: asset.risk_threshold,
+          is_active: asset.is_active
+        }))));
+      }
+
       if (data.file) {
         formDataToSend.append("file", data.file);
       }
@@ -735,6 +746,11 @@ const CreateWatchlistModal = ({
             </div>
           )}
 
+          {createMutation.isError && (
+            <p role="alert" className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-300 light:text-red-700">
+              {((createMutation.error as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail as string) || "Failed to create watchlist"}
+            </p>
+          )}
           <div className="flex justify-end gap-3">
             <button
               type="button"
@@ -1107,6 +1123,11 @@ const EditWatchlistModal = ({
             </div>
           )}
 
+          {updateMutation.isError && (
+            <p role="alert" className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-300 light:text-red-700">
+              {((updateMutation.error as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail as string) || "Failed to update watchlist"}
+            </p>
+          )}
           <div className="flex justify-end gap-3">
             <button
               type="button"
