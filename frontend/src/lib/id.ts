@@ -2,7 +2,7 @@
  * Random id for client-side list keys.
  *
  * crypto.randomUUID() only exists in secure contexts (HTTPS or localhost); on a plain-http
- * LAN host such as http://192.168.1.29:4765 it is undefined. crypto.getRandomValues() is
+ * LAN host such as http://<lan-host>:4765 it is undefined. crypto.getRandomValues() is
  * available everywhere.
  */
 export const newId = (): string => {

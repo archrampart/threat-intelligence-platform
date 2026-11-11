@@ -16,7 +16,7 @@
 
 - Watchlists: assets added by hand in the **Create** dialog were dropped (the form did not send them and
   `POST /watchlists/` had no field for them).
-- Watchlists: **Add** did nothing on plain-http hosts other than localhost (e.g. `http://192.168.1.29:4765`):
+- Watchlists: **Add** did nothing on plain-http hosts other than localhost (e.g. `http://<lan-host>:4765`):
   `crypto.randomUUID()` only exists in secure contexts. A fallback id generator is used.
 - Watchlists: Enter in the value field adds the asset instead of submitting the form; a value typed but not added
   is saved too. Create / edit dialogs show server errors.
