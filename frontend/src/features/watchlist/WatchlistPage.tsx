@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, ShieldCheck, AlertTriangle, RefreshCw, Trash2, Edit, Eye, Upload, History, Power, Share2 } from "lucide-react";
 
 import { apiClient } from "@/lib/api";
+import { newId } from "@/lib/id";
 import { useAuth } from "@/hooks/useAuth";
 import type { Watchlist, WatchlistCreate, WatchlistListResponse, WatchlistAsset, AssetCheckHistoryListResponse, IOCType } from "@/features/watchlist/types";
 
@@ -447,6 +448,18 @@ const WatchlistDetail = ({
   );
 };
 
+/** Include a value typed in the "Add asset" row but not added with the Add button. */
+const withPendingAsset = (
+  formData: WatchlistCreate,
+  pending: Omit<WatchlistAsset, "id" | "created_at">
+): WatchlistCreate => {
+  const value = pending.ioc_value.trim();
+  if (!value || formData.assets.some(a => a.ioc_type === pending.ioc_type && a.ioc_value === value)) {
+    return formData;
+  }
+  return { ...formData, assets: [...formData.assets, { ...pending, id: newId(), ioc_value: value }] };
+};
+
 const CreateWatchlistModal = ({
   onClose,
   onSuccess
@@ -522,7 +535,7 @@ const CreateWatchlistModal = ({
         ...formData.assets,
         {
           ...newAsset,
-          id: crypto.randomUUID(),
+          id: newId(),
           ioc_value: newAsset.ioc_value.trim()
         }
       ]
@@ -560,7 +573,7 @@ const CreateWatchlistModal = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    createMutation.mutate({ formData, file: uploadFile });
+    createMutation.mutate({ formData: withPendingAsset(formData, newAsset), file: uploadFile });
   };
 
   return (
@@ -687,6 +700,12 @@ const CreateWatchlistModal = ({
                 type="text"
                 value={newAsset.ioc_value}
                 onChange={(e) => setNewAsset({ ...newAsset, ioc_value: e.target.value })}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddAsset();
+                  }
+                }}
                 placeholder="Value"
                 className="col-span-2 rounded-lg border border-slate-700 dark:border-slate-700 light:border-slate-300 bg-slate-900 dark:bg-slate-900 light:bg-white px-3 py-2 text-sm text-white dark:text-white light:text-slate-900 placeholder:text-slate-500 dark:placeholder:text-slate-500 light:placeholder:text-slate-400 focus:border-brand-500 dark:focus:border-brand-500 light:focus:border-brand-600 focus:outline-hidden"
               />
@@ -866,7 +885,7 @@ const EditWatchlistModal = ({
         ...formData.assets,
         {
           ...newAsset,
-          id: crypto.randomUUID(),
+          id: newId(),
           ioc_value: newAsset.ioc_value.trim()
         }
       ]
@@ -906,7 +925,7 @@ const EditWatchlistModal = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData) return;
-    updateMutation.mutate({ formData, file: uploadFile });
+    updateMutation.mutate({ formData: withPendingAsset(formData, newAsset), file: uploadFile });
   };
 
   if (isLoading || !formData) {
@@ -1043,6 +1062,12 @@ const EditWatchlistModal = ({
                 type="text"
                 value={newAsset.ioc_value}
                 onChange={(e) => setNewAsset({ ...newAsset, ioc_value: e.target.value })}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddAsset();
+                  }
+                }}
                 placeholder="Value"
                 className="col-span-2 rounded-lg border border-slate-700 dark:border-slate-700 light:border-slate-300 bg-slate-900 dark:bg-slate-900 light:bg-white px-3 py-2 text-sm text-white dark:text-white light:text-slate-900 placeholder:text-slate-500 dark:placeholder:text-slate-500 light:placeholder:text-slate-400 focus:border-brand-500 dark:focus:border-brand-500 light:focus:border-brand-600 focus:outline-hidden"
               />

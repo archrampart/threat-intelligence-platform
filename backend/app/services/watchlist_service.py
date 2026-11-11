@@ -176,7 +176,7 @@ class WatchlistService:
             db_watchlist.is_active = is_active
 
         # Update assets - delete existing and create new ones
-        self.db.query(AssetWatchlistItem).filter(AssetWatchlistItem.watchlist_id == watchlist_id).delete()
+        self._delete_items(watchlist_id)
 
         for asset in payload.assets:
             risk_threshold = RiskThreshold(asset.risk_threshold) if asset.risk_threshold else None
@@ -234,9 +234,33 @@ class WatchlistService:
             return False
 
         db_watchlist = self.db.query(AssetWatchlist).filter(AssetWatchlist.id == watchlist_id).first()
+        self._delete_items(watchlist_id)
         self.db.delete(db_watchlist)
         self.db.commit()
         return True
+
+    def _delete_items(self, watchlist_id: str) -> None:
+        """Delete a watchlist's items with their check history (no ORM cascade is defined).
+
+        Alerts raised for an item are kept but detached from it.
+        """
+        from app.models.alert import Alert
+
+        item_ids = [
+            row.id for row in
+            self.db.query(AssetWatchlistItem.id).filter(AssetWatchlistItem.watchlist_id == watchlist_id)
+        ]
+        if not item_ids:
+            return
+        self.db.query(AssetCheckHistoryModel).filter(
+            AssetCheckHistoryModel.watchlist_item_id.in_(item_ids)
+        ).delete(synchronize_session=False)
+        self.db.query(Alert).filter(Alert.asset_id.in_(item_ids)).update(
+            {Alert.asset_id: None}, synchronize_session=False
+        )
+        self.db.query(AssetWatchlistItem).filter(
+            AssetWatchlistItem.id.in_(item_ids)
+        ).delete(synchronize_session=False)
 
     def check_watchlist_item(self, item_id: str, user_id: str) -> Optional[dict]:
         """Manually check a watchlist item using IOC service.

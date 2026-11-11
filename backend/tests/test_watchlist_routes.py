@@ -42,3 +42,25 @@ def test_update_adds_email_asset(client, auth_headers):
                    data={"name": "Edit me", "assets_json": _assets(("email", "it@acme.com"))})
     assert r.status_code == 200, r.text
     assert [a["ioc_value"] for a in r.json()["assets"]] == ["it@acme.com"]
+
+
+def test_delete_removes_items_and_history(client, auth_headers, db_session):
+    from uuid import uuid4
+
+    from app.models.watchlist import AssetCheckHistory, AssetWatchlistItem
+
+    created = client.post("/api/v1/watchlists/", headers=auth_headers, data={
+        "name": "Gone", "assets_json": _assets(("email", "a@acme.com"), ("ip", "1.1.1.1"))}).json()
+    item = db_session.query(AssetWatchlistItem).filter_by(watchlist_id=created["id"]).first()
+    db_session.add(AssetCheckHistory(id=str(uuid4()), watchlist_item_id=item.id))
+    db_session.commit()
+
+    # editing replaces the items without leaving history behind
+    r = client.put(f"/api/v1/watchlists/{created['id']}", headers=auth_headers,
+                   data={"name": "Gone", "assets_json": _assets(("email", "b@acme.com"))})
+    assert r.status_code == 200
+    assert db_session.query(AssetCheckHistory).count() == 0
+    assert db_session.query(AssetWatchlistItem).filter_by(watchlist_id=created["id"]).count() == 1
+
+    assert client.delete(f"/api/v1/watchlists/{created['id']}", headers=auth_headers).status_code == 204
+    assert db_session.query(AssetWatchlistItem).filter_by(watchlist_id=created["id"]).count() == 0
