@@ -30,7 +30,7 @@ MAX_CHANNELS = 50
 
 
 class AssetIn(BaseModel):
-    kind: Literal["domain", "keyword", "email_domain"]
+    kind: Literal["domain", "keyword", "email_domain", "email"]
     value: str = Field(..., min_length=1, max_length=255)
 
 

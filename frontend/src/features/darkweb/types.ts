@@ -1,4 +1,4 @@
-export type AssetKind = "domain" | "keyword" | "email_domain";
+export type AssetKind = "domain" | "keyword" | "email_domain" | "email";
 export type MentionSource = "ransomware" | "infostealer" | "breach" | "forum" | "telegram" | "feed";
 export type Severity = "critical" | "high" | "medium" | "low";
 

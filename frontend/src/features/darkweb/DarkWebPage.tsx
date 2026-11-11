@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AtSign,
+  Mail,
   Bug,
   CheckCheck,
   Database,
@@ -54,7 +55,18 @@ const SEVERITY_CLASS: Record<string, string> = {
 const KIND_META: Record<AssetKind, { label: string; icon: typeof Globe; placeholder: string; hint: string }> = {
   domain: { label: "Domain", icon: Globe, placeholder: "acme.com", hint: "Matches the domain and its subdomains" },
   keyword: { label: "Brand / keyword", icon: Tag, placeholder: "Acme Corp", hint: "Whole-word, case-insensitive" },
-  email_domain: { label: "E-mail domain", icon: AtSign, placeholder: "acme.com", hint: "Matches leaked addresses like user@acme.com" }
+  email_domain: {
+    label: "E-mail domain",
+    icon: AtSign,
+    placeholder: "acme.com",
+    hint: "Your organisation's domain only (no user@ part) - matches any leaked address like user@acme.com"
+  },
+  email: {
+    label: "E-mail address",
+    icon: Mail,
+    placeholder: "ceo@acme.com",
+    hint: "One mailbox, matched exactly in leak posts, Telegram messages and feeds (not inside breach dumps)"
+  }
 };
 
 const card = "rounded-2xl border border-slate-800 bg-slate-900/40 p-5 light:border-slate-200 light:bg-white";
@@ -254,8 +266,8 @@ const AssetsTab = () => {
 
       {assets.length === 0 ? (
         <div className={`${card} text-sm text-slate-400`}>
-          Add the domains, e-mail domains and brand names you want to watch. Every scan checks them against ransomware
-          leak sites, infostealer data, breach catalogs and your Telegram channels.
+          Add the domains, e-mail domains, e-mail addresses and brand names you want to watch. Every scan checks them
+          against ransomware leak sites, infostealer data, breach catalogs, feeds and your Telegram channels.
         </div>
       ) : (
         <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
@@ -266,7 +278,7 @@ const AssetsTab = () => {
                 <div className="flex min-w-0 items-center gap-3">
                   <Icon className="h-4 w-4 shrink-0 text-brand-400" />
                   <div className="min-w-0">
-                    <p className="truncate font-mono text-sm text-white light:text-slate-900">{a.value}</p>
+                    <p title={a.value} className="truncate font-mono text-sm text-white light:text-slate-900">{a.value}</p>
                     <p className="text-xs text-slate-500">{KIND_META[a.kind as AssetKind]?.label}</p>
                   </div>
                 </div>

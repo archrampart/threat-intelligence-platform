@@ -215,3 +215,47 @@ def test_mentions_sorted_unread_then_severity(client, db_session):
     db_session.commit()
     order = [(m["severity"], m["is_read"]) for m in client.get("/api/v1/darkweb/mentions", headers=headers).json()["items"]]
     assert order == [("critical", False), ("high", False), ("medium", False), ("high", True)]
+
+
+# --------------------------------------------------------------------------- e-mail address assets
+
+
+def test_email_address_matching():
+    m = Matcher([Asset("1", "u", "email", "ceo@acme.com")])
+    assert m.find("combo list: CEO@Acme.com:hunter2")
+    assert m.find("contact <ceo@acme.com>.")  # sentence-ending dot still matches
+    assert not m.find("xceo@acme.com") and not m.find("vp.ceo@acme.com")  # longer local part
+    assert not m.find("ceo@acme.com.tr") and not m.find("ceo@acme.company")  # longer domain
+    assert not m.find("ceo@mail.acme.com")
+
+
+def test_email_validation_messages():
+    assert normalise("email", " mailto:CEO@Acme.com ") == "ceo@acme.com"
+    assert validate("email", "ceo@acme.com") is None
+    assert validate("email", "abc@hotmail.com") is None  # a single mailbox on a public provider is fine
+    for bad in ("acme.com", "ceo@", "@acme.com", "ceo@acme", "a b@acme.com"):
+        assert validate("email", normalise("email", bad)) == "Not a valid e-mail address", bad
+
+    # a full address in a domain field explains what to enter
+    for kind in ("email_domain", "domain"):
+        assert "Enter only the domain part" in validate(kind, normalise(kind, "abc@hotmail.com"))
+    # public mail providers would match nearly every leak
+    assert "public mail provider" in validate("email_domain", "hotmail.com")
+    assert "public mail provider" in validate("domain", "gmail.com")
+    assert validate("email_domain", "acme.com") is None
+
+
+def test_email_asset_api_and_scan(client, db_session):
+    user, headers = _user(db_session)
+    r = client.post("/api/v1/darkweb/assets", json={"kind": "email", "value": "Ceo@Acme.com"}, headers=headers)
+    assert r.status_code == 201 and r.json()["value"] == "ceo@acme.com"
+    r = client.post("/api/v1/darkweb/assets", json={"kind": "email_domain", "value": "abc@hotmail.com"}, headers=headers)
+    assert r.status_code == 400 and "E-mail address" in r.json()["detail"]
+
+    posts = [_post("Acme Corp", description="Sample: ceo@acme.com, cfo@acme.com"), _post("Other", description="xceo@acme.com")]
+    with patch.object(feeds, "infostealer_exposure") as stealer, patch("app.services.notifier.notify_user_async"):
+        result = DarkWebMonitor(db_session).scan_user(user.id, posts=posts, breaches=[])
+    stealer.assert_not_called()  # domain-level lookups are not run for single addresses
+    mention = db_session.query(DarkWebMention).filter_by(user_id=user.id).one()
+    assert result["by_source"] == {"ransomware": 1}
+    assert mention.matched_term == "ceo@acme.com" and mention.severity == "high"

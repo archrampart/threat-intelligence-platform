@@ -17,6 +17,7 @@ class AssetKind(str, PyEnum):
     DOMAIN = "domain"  # company domain: matched as host / domain in leak posts and messages
     KEYWORD = "keyword"  # brand / product / executive name: whole-word, case-insensitive
     EMAIL_DOMAIN = "email_domain"  # matched as "@domain" in messages
+    EMAIL = "email"  # a single address, matched exactly in leak posts, messages and feeds
 
 
 class MentionSource(str, PyEnum):

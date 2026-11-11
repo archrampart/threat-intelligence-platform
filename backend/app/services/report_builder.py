@@ -182,7 +182,7 @@ DW_SOURCE_LABEL = {
     "telegram": "Telegram",
     "feed": "News & custom feeds",
 }
-ASSET_LABEL = {"domain": "Domain", "email_domain": "E-mail domain", "keyword": "Keyword"}
+ASSET_LABEL = {"domain": "Domain", "email_domain": "E-mail domain", "email": "E-mail address", "keyword": "Keyword"}
 
 
 def build_darkweb_model(mentions: list[dict], assets: list[dict], start: Any = None, end: Any = None) -> dict:
