@@ -167,8 +167,15 @@ On **Monitored assets**, add what to look for (up to 50 per user):
 | Type | Matches | Example |
 |---|---|---|
 | Domain | The domain and its subdomains; `evil-acme.com` and `acme.com.tr` do not match | `acme.com` |
-| E-mail domain | Leaked addresses such as `john@acme.com` | `acme.com` |
+| E-mail domain | Any leaked address on your domain, such as `john@acme.com` (enter the domain only) | `acme.com` |
+| E-mail address | One mailbox, matched exactly (`xceo@acme.com` and `ceo@acme.com.tr` do not match) | `ceo@acme.com` |
 | Brand / keyword | Whole word, case-insensitive (min. 3 characters) | `Acme Corp` |
+
+Public mail providers (`gmail.com`, `hotmail.com`, `outlook.com`, `yandex.com`, ...) are rejected as domain or
+e-mail domain assets: they appear in almost every leak and would flood you with unrelated alerts. Watch a single
+mailbox on them with the **E-mail address** type. E-mail addresses are matched in ransomware leak posts, Telegram
+messages and RSS/JSON feeds; the domain-level lookups (HIBP breach catalog, Hudson Rock) do not apply to them, and
+the content of breach dumps is not searched.
 
 ### Sources
 

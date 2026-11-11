@@ -216,7 +216,7 @@ See `.env.example` for the other options (`DEFAULT_ADMIN_PASSWORD`, `CORS_ORIGIN
 - **Bulk IOC input**: paste reports or logs (defanged values supported), query with progress, export CSV
 - **Exports**: IOC history as JSON, **STIX 2.1** bundle or **MISP** event
 - **Notifications**: per-user Slack / Teams / generic webhooks for watchlist and dark web alerts
-- **Dark web monitoring**: your domains, e-mail domains and brand names checked against ransomware leak
+- **Dark web monitoring**: your domains, e-mail domains, e-mail addresses and brand names checked against ransomware leak
   sites (ransomware.live, RansomLook), infostealer logs (Hudson Rock), breaches (HIBP) and Telegram channels
   (public preview or your own Telegram account)
 - **Watchlist**: Asset monitoring and alert system

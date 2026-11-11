@@ -1,5 +1,27 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **Dark web: E-mail address assets** - watch a single mailbox; matched exactly in leak posts, Telegram messages and feeds.
+- `BACKEND_PORT` sets the host port of the backend (Swagger UI / debugging, still bound to 127.0.0.1).
+
+### Changed
+
+- Dark web domain / e-mail domain assets: a full address gets a clear "enter only the domain part" message, and
+  public mail providers (`gmail.com`, `hotmail.com`, ...) are rejected because they match almost every leak.
+
+### Fixed
+
+- Watchlists: assets added by hand in the **Create** dialog were dropped (the form did not send them and
+  `POST /watchlists/` had no field for them).
+- Watchlists: **Add** did nothing on plain-http hosts other than localhost (e.g. `http://192.168.1.29:4765`):
+  `crypto.randomUUID()` only exists in secure contexts. A fallback id generator is used.
+- Watchlists: Enter in the value field adds the asset instead of submitting the form; a value typed but not added
+  is saved too. Create / edit dialogs show server errors.
+- Deleting or editing a watchlist left its items and check history behind in the database.
+
 ## 2.1.0 - 2026-11-06
 
 ### Security
