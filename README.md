@@ -38,7 +38,7 @@ default or weak secrets.
 
 **Access URLs:**
 - Frontend: http://localhost:4765 (the API is proxied under `/api`)
-- API Documentation: http://127.0.0.1:8777/docs (bound to localhost only)
+- API Documentation: http://127.0.0.1:8777/docs (bound to localhost only, port set by `BACKEND_PORT`)
 - First login: see [Default Credentials](#default-credentials)
 
 ### Option 2: Local Development
@@ -186,6 +186,7 @@ address (same origin, so session cookies work). Production builds use `/api/v1` 
 
 `./docker-start.sh` creates `.env` and generates `SECRET_KEY`, `ENCRYPTION_KEY` and `REDIS_PASSWORD`.
 See `.env.example` for the other options (`DEFAULT_ADMIN_PASSWORD`, `CORS_ORIGINS`, `COOKIE_SECURE`,
+`FRONTEND_PORT`, `BACKEND_PORT`,
 `DARKWEB_*`, ...).
 
 ### Upgrading from 2.0
